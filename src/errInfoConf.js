@@ -162,6 +162,10 @@ const conf = {
         URIError: { // 给 encodeURI()或  decodeURl()传递的参数无效
             code: 500,
             message: 'Internal error'
+        },
+        MongoError: {
+            code: 500,
+            message: 'Mongodb error'
         }
     },
     en: {

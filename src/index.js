@@ -116,14 +116,18 @@ const foo = function (err) {
  const errHandle = function (callback) {
     return (err, req, res, next) => {
         const basicCode = conf.basicError[err.name]
-        if (basicCode) {
+        if (basicCode) { //基础错误
             err = {
                 name: err.name,
                 code: basicCode.code,
                 message: basicCode.message,
                 stack: formatStack(new Error().stack)
             }
-        } else {
+        }
+        else if (!isNaN(err) && errInfo[parseInt(err)]) { //自定义错误
+            err = errInfo[parseInt(err)]()
+        }
+        else if (!errInfo[err.code]) { //其它错误
             err = {
                 name: err.name,
                 code: 888,
