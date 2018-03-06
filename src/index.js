@@ -10,20 +10,23 @@ let app = {
 } //设置app信息
 let onFundebug = false //设置是否启用fundebug
 
+const selfPath = 'node_modules/snail-error/lib'
+const projectPath = __dirname.replace(selfPath, '')
+
 /**
  * 格式化栈信息，去掉本栈的路径提示
  * @param {*} stack 栈错误信息
  */
 const formatStack = function (stack) {
-    let info = ''
-    if (stack) {
-        let _stack = stack.split('\n')
-        const start_stack = _stack[0]
-        _stack = _stack.splice(3) //外部错误文件所在位置
-        _stack.unshift(start_stack)
-        info = _stack.join('\n')
-    }
-    return info
+    let arr = stack.split('\n')
+    arr = arr.filter((val) => {
+        return val.indexOf(selfPath) < 0
+    })
+    arr = arr.map((val) => {
+        return val.replace(projectPath, '')
+    })
+
+    return arr.join('\n')
 }
 
 /**
@@ -37,13 +40,17 @@ const cnfErrInfo = function (lang, appInfo) {
     }
     const _conf = conf[lang] || conf.en
     for(const item of Object.keys(_conf.custom)) {
-        errInfo[item] = function () {
-            return {
-                name: _conf.name,
-                code: item,
-                message: _conf.custom[item],
-                stack: formatStack(new Error().stack)
+        if (item < 500) {
+            errInfo[item] = function () {
+                return {
+                    name: _conf.name,
+                    code: item,
+                    message: _conf.custom[item],
+                    stack: formatStack(new Error().stack)
+                }
             }
+        } else {
+            errInfo[item] = _conf.custom[item]
         }
     }
 }
@@ -115,13 +122,13 @@ const foo = function (err) {
  */
  const errHandle = function (callback) {
     return (err, req, res, next) => {
-        const basicCode = conf.basicError[err.name]
+        const basicCode = errInfo[500][err.name]
         if (basicCode) { //基础错误
             err = {
                 name: err.name,
                 code: basicCode.code,
                 message: basicCode.message,
-                stack: formatStack(new Error().stack)
+                stack: formatStack(err.stack || new Error().stack)
             }
         }
         else if (!isNaN(err) && errInfo[parseInt(err)]) { //自定义错误
@@ -132,7 +139,7 @@ const foo = function (err) {
                 name: err.name,
                 code: 888,
                 message: '解析失败，当前程序不认识这个错误，需更新',
-                stack: formatStack(new Error().stack)
+                stack: formatStack(err.stack || new Error().stack)
             }
         }
         if (_.isFunction(callback)) {

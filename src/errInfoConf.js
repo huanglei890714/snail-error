@@ -61,7 +61,46 @@ const en = {
     401: 'Upload file failed', // 上传文件失败
     402: 'Unsupported file type', // 不支持的文件类型
     403: 'File size too large', // 文件超出大小限制
-    404: 'Resource does not exist'
+    404: 'Resource does not exist',
+
+    500: { //基础错误信息
+        Error: { // 与 eval() 有关
+            code: 501,
+            message: 'Internal error'
+        },
+        EvalError: { // 与 eval() 有关
+            code: 502,
+            message: 'Internal error'
+        },
+        InternalError: { // 创建一个代表Javascript引擎内部错误的异常抛出的实例。 如: "递归太多"
+            code: 503,
+            message: 'Internal error'
+        },
+        RangeError: { // 数值变量或参数超出其有效范围
+            code: 504,
+            message: 'Internal error'
+        },
+        ReferenceError: { // 无效引用
+            code: 505,
+            message: 'Internal error'
+        },
+        SyntaxError: { // eval() 在解析代码的过程中发生的语法错误
+            code: 506,
+            message: 'Malformed json'
+        },
+        TypeError: { // 变量或参数不属于有效类型
+            code: 507,
+            message: 'Internal error'
+        },
+        URIError: { // 给 encodeURI()或  decodeURl()传递的参数无效
+            code: 508,
+            message: 'Internal error'
+        },
+        MongoError: {
+            code: 509,
+            message: 'Mongodb error'
+        }
+    }
 }
 
 /**
@@ -126,48 +165,49 @@ const cn = {
     401: '上传文件失败', // 上传文件失败
     402: '不支持的文件类型', // 不支持的文件类型
     403: '超出大小限制', // 文件超出大小限制
-    404: '资源不存在'
+    404: '资源不存在',
+
+    500: { //基础错误信息
+        Error: { // 与 eval() 有关
+            code: 501,
+            message: '内部错误'
+        },
+        EvalError: { // 与 eval() 有关
+            code: 502,
+            message: 'eval转换异常'
+        },
+        InternalError: { // 创建一个代表Javascript引擎内部错误的异常抛出的实例。 如: "递归太多"
+            code: 503,
+            message: '堆栈异常'
+        },
+        RangeError: { // 数值变量或参数超出其有效范围
+            code: 504,
+            message: '超出有效范围'
+        },
+        ReferenceError: { // 无效引用
+            code: 505,
+            message: '无效引用'
+        },
+        SyntaxError: { // eval() 在解析代码的过程中发生的语法错误
+            code: 506,
+            message: '语法错误'
+        },
+        TypeError: { // 变量或参数不属于有效类型
+            code: 507,
+            message: '无效类型'
+        },
+        URIError: { // 给 encodeURI()或  decodeURl()传递的参数无效
+            code: 508,
+            message: '无效URI'
+        },
+        MongoError: {
+            code: 509,
+            message: 'Mongodb数据库错误'
+        }
+    }
 }
 
 const conf = {
-    basicError: { //基础错误信息
-        Error: { // 与 eval() 有关
-            code: 101,
-            message: 'Internal error'
-        },
-        EvalError: { // 与 eval() 有关
-            code: 500,
-            message: 'Internal error'
-        },
-        InternalError: { // 创建一个代表Javascript引擎内部错误的异常抛出的实例。 如: "递归太多"
-            code: 500,
-            message: 'Internal error'
-        },
-        RangeError: { // 数值变量或参数超出其有效范围
-            code: 500,
-            message: 'Internal error'
-        },
-        ReferenceError: { // 无效引用
-            code: 500,
-            message: 'Internal error'
-        },
-        SyntaxError: { // eval() 在解析代码的过程中发生的语法错误
-            code: 204,
-            message: 'Malformed json'
-        },
-        TypeError: { // 变量或参数不属于有效类型
-            code: 500,
-            message: 'Internal error'
-        },
-        URIError: { // 给 encodeURI()或  decodeURl()传递的参数无效
-            code: 500,
-            message: 'Internal error'
-        },
-        MongoError: {
-            code: 500,
-            message: 'Mongodb error'
-        }
-    },
     en: {
         name: 'GeneralError',
         custom: en
