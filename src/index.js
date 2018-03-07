@@ -10,6 +10,10 @@ let app = {
 } //设置app信息
 let onFundebug = false //设置是否启用fundebug
 
+const getOnFundebug = function () {
+    return onFundebug
+}
+
 const selfPath = 'node_modules/snail-error/lib'
 const projectPath = __dirname.replace(selfPath, '')
 
@@ -48,7 +52,7 @@ const cnfErrInfo = function (lang, appInfo) {
             if (item < 500) {
                 errInfo[item] = function (details) { //details为细节错误
                     let denfMessage = ''
-                    if (!onFundebug) { //fundebug不启用时拼接到message
+                    if (!getOnFundebug()) { //fundebug不启用时拼接到message
                         if (_.isPlainObject(details)) {
                             denfMessage = ':' + JSON.stringify(details)
                         } else if (!_.isEmpty(details)){
