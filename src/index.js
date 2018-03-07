@@ -45,8 +45,8 @@ const cnfErrInfo = function (lang, appInfo) {
                 let denfMessage = ''
                 if (_.isPlainObject(details)) { //如果定义的是对象则转成字符串
                     denfMessage = ':' + JSON.stringify(details)
-                } else if (!_.isEmpty(details)){
-                    denfMessage = ':' + details
+                } else if (!_.isEmpty(details)){ //字符串消息
+                    denfMessage = '-' + details
                 }
                 return {
                     name: _conf.name,
@@ -139,7 +139,7 @@ const foo = function (err, params) {
             }
         }
         else if (!isNaN(err) && errInfo[parseInt(err)]) { //自定义错误
-            err = errInfo[parseInt(err)]()
+            err = errInfo[err]()
         }
         else if (!errInfo[err.code]) { //其它错误
             err = {
