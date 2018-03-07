@@ -29,35 +29,45 @@ const formatStack = function (stack) {
     return arr.join('\n')
 }
 
+const printOutErr = function (title, err) {
+    console.log(title, err, '请联系开发者或提交issue, 开发者邮箱: yahuhuang@163.com')
+}
+
 /**
  * 设置提示语言, 及提示版本号
  * @param {*} lang 语言种类
  * @param {*} appInfo 语言种类 { version: '版本', stage: '版本模式' }。可默认
  */
 const cnfErrInfo = function (lang, appInfo) {
-    if (appInfo) {
-        app = appInfo
-    }
-    const _conf = conf[lang] || conf.en
-    for(const item of Object.keys(_conf.custom)) {
-        if (item < 500) {
-            errInfo[item] = function (details) { //细节错误
-                let denfMessage = ''
-                if (_.isPlainObject(details)) { //如果定义的是对象则转成字符串
-                    denfMessage = ':' + JSON.stringify(details)
-                } else if (!_.isEmpty(details)){ //字符串消息
-                    denfMessage = '-' + details
-                }
-                return {
-                    name: _conf.name,
-                    code: item,
-                    message: _conf.custom[item] + denfMessage,
-                    stack: formatStack(new Error().stack)
-                }
-            }
-        } else {
-            errInfo[item] = _conf.custom[item]
+    try {
+        if (appInfo) {
+            app = appInfo
         }
+        const _conf = conf[lang] || conf.en
+        for(const item of Object.keys(_conf.custom)) {
+            if (item < 500) {
+                errInfo[item] = function (details) { //details为细节错误
+                    let denfMessage = ''
+                    if (!onFundebug) { //fundebug不启用时拼接到message
+                        if (_.isPlainObject(details)) {
+                            denfMessage = ':' + JSON.stringify(details)
+                        } else if (!_.isEmpty(details)){
+                            denfMessage = '-' + details
+                        }
+                    }
+                    return {
+                        name: _conf.name,
+                        code: item,
+                        message: _conf.custom[item] + denfMessage,
+                        stack: formatStack(new Error().stack)
+                    }
+                }
+            } else {
+                errInfo[item] = _conf.custom[item]
+            }
+        }
+    } catch (err) {
+        printOutErr('errinfo配置异常：', err)
     }
 }
 
@@ -83,7 +93,7 @@ const cnfFundebug = function (options) {
             metaData: options.metaData || null
         })
     } catch (err) {
-        console.log('fundebug配置异常：', err)
+        printOutErr('fundebug配置异常：', err)
     }
 }
 
@@ -91,20 +101,21 @@ const cnfFundebug = function (options) {
  * 记录异常消息
  * @param {*} errMessage 日志消息
  * @param {*} title 日志title, 默认为严重错误日志，否则为一般错误日志
+ * @param {*} metaData 自定义错误细节信息
  */
-const recordErr = function (errMessage, title) {
+const recordErr = function (errMessage, title, metaData) {
     try {
         if (onFundebug) {
             if (title) {
-                fundebug.notify(title, errMessage)
+                fundebug.notify(title, errMessage, metaData)
             } else {
-                fundebug.notifyError(errMessage)
+                fundebug.notifyError(errMessage, metaData)
             }
         } else {
             console.log(errMessage)
         }
     } catch (err) {
-        console.log('fundebug发送异常：', err)
+        printOutErr('fundebug发送异常：', err)
     }
 }
 
@@ -114,13 +125,20 @@ const recordErr = function (errMessage, title) {
  * @param {*} params 自定义便于调试的错误信息, 可传空
  */
 const foo = function (err, params) {
-    if (!isNaN(err)) {//是数字
-        err = (errInfo[err] || errInfo[101])(params)
-        recordErr(err)
-    } else {
-        recordErr(err)
+    try {
+        if (!isNaN(err)) {//是数字
+            err = (errInfo[err] || errInfo[101])(params)
+        }
+        if (_.isPlainObject(params)) {
+            params = {
+                metaData: params
+            }
+        }
+        recordErr(err, null, params)
+        return err
+    } catch (_err) {
+        printOutErr('错误处理异常：', _err)
     }
-    return err
 }
 
 /**
@@ -129,30 +147,34 @@ const foo = function (err, params) {
  */
  const errHandle = function (callback) {
     return (err, req, res, next) => {
-        const basicCode = errInfo[500][err.name]
-        if (basicCode) { //基础错误
-            err = {
-                name: err.name,
-                code: basicCode.code,
-                message: basicCode.message,
-                stack: formatStack(err.stack || new Error().stack)
+        try {
+            const basicCode = errInfo[500][err.name]
+            if (basicCode) { //基础错误
+                err = {
+                    name: err.name,
+                    code: basicCode.code,
+                    message: basicCode.message,
+                    stack: formatStack(err.stack || new Error().stack)
+                }
             }
-        }
-        else if (!isNaN(err) && errInfo[parseInt(err)]) { //自定义错误
-            err = errInfo[err]()
-        }
-        else if (!errInfo[err.code]) { //其它错误
-            err = {
-                name: err.name,
-                code: 888,
-                message: '解析失败，当前程序不认识这个错误，需更新',
-                stack: formatStack(err.stack || new Error().stack)
+            else if (!isNaN(err) && errInfo[parseInt(err)]) { //自定义错误
+                err = errInfo[err]()
             }
+            else if (!errInfo[err.code]) { //其它错误
+                err = {
+                    name: err.name,
+                    code: 888,
+                    message: '解析失败，当前程序不认识这个错误，需更新',
+                    stack: formatStack(err.stack || new Error().stack)
+                }
+            }
+            if (_.isFunction(callback)) {
+                callback(err)
+            }
+            res.json(err)
+        } catch (_err) {
+            printOutErr('handle错误处理异常：', _err)
         }
-        if (_.isFunction(callback)) {
-            callback(err)
-        }
-        res.json(err)
     }
 }
 
