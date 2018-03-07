@@ -41,11 +41,17 @@ const cnfErrInfo = function (lang, appInfo) {
     const _conf = conf[lang] || conf.en
     for(const item of Object.keys(_conf.custom)) {
         if (item < 500) {
-            errInfo[item] = function () {
+            errInfo[item] = function (details) { //细节错误
+                let denfMessage = ''
+                if (_.isPlainObject(details)) { //如果定义的是对象则转成字符串
+                    denfMessage = ':' + JSON.stringify(details)
+                } else if (!_.isEmpty(details)){
+                    denfMessage = ':' + details
+                }
                 return {
                     name: _conf.name,
                     code: item,
-                    message: _conf.custom[item],
+                    message: _conf.custom[item] + denfMessage,
                     stack: formatStack(new Error().stack)
                 }
             }
@@ -105,10 +111,11 @@ const recordErr = function (errMessage, title) {
 /**
  * 错误处理
  * @param {*} err 错误信息
+ * @param {*} params 自定义便于调试的错误信息, 可传空
  */
-const foo = function (err) {
+const foo = function (err, params) {
     if (!isNaN(err)) {//是数字
-        err = (errInfo[err] || errInfo[101])()
+        err = (errInfo[err] || errInfo[101])(params)
         recordErr(err)
     } else {
         recordErr(err)
