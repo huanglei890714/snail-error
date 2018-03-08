@@ -24,9 +24,11 @@ error.fundebug({
     metaData: { name: '自定义头信息' }
 })
 ```
-### 自定义错误使用, 自行查看errinfoConf配置文件
+### 自定义错误使用, 自行查看errinfoConf配置文件，还可扩展配置到错误信息栈
 ```
-error(306)
+//error(306)
+error(306, {details: '这里是扩展配置测试', data: { name: 'hsl' } })
+
 ```
 ### 输出
 ```
@@ -55,5 +57,10 @@ ReferenceError: hsl is not defined
 ```
 app.use(error.errHandle(callback))
 ```
+
+### 关于fundebug的错误信息图
+![](https://github.com/huanglei890714/snail-error/blob/master/demo/1.png)
+![](https://github.com/huanglei890714/snail-error/blob/master/demo/2.png)
+
 #### 最后感谢大家使用和纠正错误，提出修改意见
 
